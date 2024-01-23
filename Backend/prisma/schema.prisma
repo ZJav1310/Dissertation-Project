@@ -1,0 +1,92 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+// This is the provider for the local MySQL database
+// datasource db {
+//   provider = "mysql"
+//   url      = "mysql://root:root@localhost:3306/projectyf"
+// }
+
+// This is the Provider for the Google Cloud MySQL database
+datasource db {
+  provider = "mysql"
+  url      = "mysql://root:B&Ih$6f6xSh\"onxB@35.189.205.96/mysqlproject"
+}
+
+//TODO: can use @@unique([email, address.number]) etc instead of creating a new field
+
+model Project {
+  project_id               Int                   @id @default(autoincrement())
+  project_title            String                @db.VarChar(256)
+  project_content          Json
+  max_capacity             Int                   @default(1)
+  date_created             DateTime?             @default(now())
+  updated_at               DateTime?             @updatedAt
+  application_deadline     DateTime?
+  applications             ProjectApplications[]
+  project_files            ProjectFile[]
+  author                   User                  @relation(fields: [author_id], references: [user_id])
+  author_id                Int
+  project_optional_details Json?
+}
+
+// model ProjectDetails {
+//   project             Project       @relation(fields: [project_id], references: [project_id])
+//   project_id          Int           @unique
+//   project_description String
+//   project_files       ProjectFile[]
+// }
+
+model ProjectFile {
+  project          Project  @relation(fields: [project_id], references: [project_id])
+  project_id       Int
+  file_id          Int      @id @default(autoincrement())
+  file_name        String
+  file_format      String
+  file_location    String
+  file_date_upload DateTime
+
+  @@unique([file_id, project_id])
+}
+
+model User {
+  user_id       Int                   @id @default(autoincrement())
+  user_email    String                @unique
+  user_password String
+  user_level    Int?
+  user_name     String?
+  applied       ProjectApplications[]
+  projects      Project[]
+}
+
+// model Profile {
+//   user        User   @relation(fields: [user_id], references: [user_id])
+//   user_id     Int    @unique
+//   user_level  String
+//   user_year   Int
+//   user_course String
+// }
+
+model ProjectApplications {
+  user         User     @relation(fields: [user_id], references: [user_id])
+  project      Project  @relation(fields: [project_id], references: [project_id])
+  user_id      Int
+  project_id   Int
+  choice       Int
+  assigned     Boolean  @default(false)
+  date_applied DateTime @db.Timestamp()
+
+  @@id([user_id, project_id])
+}
+
+model Template {
+  project_id           Int       @id @default(autoincrement())
+  project_title        String    @db.VarChar(256)
+  project_content      String    @db.VarChar(1000)
+  max_capacity         Int       @default(1)
+  date_created         DateTime? @default(now())
+  updated_at           DateTime? @updatedAt
+  application_deadline DateTime?
+  author_id            Int
+}
